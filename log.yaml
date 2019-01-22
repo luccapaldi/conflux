@@ -4,3 +4,9 @@
     time : "0:9:33"
     parameters : 
     - camera : Andor
+- "pickledata"
+    description : "Pickle (serialize) data."
+    date : "2019-1-22"
+    time : "11:11:12"
+    parameters : 
+    - outputfile : b.pickle

@@ -52,7 +52,7 @@ def logscript(scriptname, logdescription, **kwargs):
         log.write('    - {} : {}\n'.format(key,value))
     log.close()
 
-def pickledata(dataobject,filename):
+def pickledata(dataobject, filename, log = True):
     """
     Pickle (serialize) python data object.
 
@@ -62,29 +62,32 @@ def pickledata(dataobject,filename):
     """
     with open(filename, 'wb') as fileobject:
         pickle.dump(dataobject, fileobject, pickle.HIGHEST_PROTOCOL)
-    logscript('pickledata','Pickle (serialize) data.',outputfile = filename)
+    if log == True:
+        logscript('pickledata','Pickle (serialize) data.',outputfile = filename)
 
-def unpickledata(filename):
+def unpickledata(filename, log = True):
     """Unpickle (import serialized) data."""
     with open(filename, 'rb') as fileobject: 
-        dataobject = pickle.load(fileobject) 
-    logscript('unpickledata','Unpickle (import serialized) data.',
-              inputfile = filename)
+        dataobject = pickle.load(fileobject)
+    if log == True:
+        logscript('unpickledata','Unpickle (import serialized) data.',
+                   inputfile = filename)
     return(dataobject)
 
-def importtiff(filename): 
+def importtiff(filename, log = True): 
     """Import a tiff image or image stack as a numpy array."""
     imgarray = tifffile.imread(filename) 
     #log = open('log.yaml','a') # assume opening a new log 
     #log.write(str(filename) + '\n') 
-    #log.close() 
-    logscript('importtiff','Import tiff into numpy array.',inputfile = filename) 
+    #log.close()
+    if log == True:
+        logscript('importtiff','Import tiff into numpy array.',inputfile = filename) 
     return(imgarray)
 
 # def splitchannels(tiffarray):
     # split channels in a tiffarray
 
-def extractmetadata(filename):
+def extractmetadata(filename, log = True):
     """
     Extract acquisition metadata from text file produced by ImageJ MicroManager
     with an Andor camera.
@@ -124,27 +127,32 @@ def extractmetadata(filename):
             channel0.append(json[frame]['ElapsedTime-ms'] - starttime)
         else:
             channel1.append(json[frame]['ElapsedTime-ms'] - starttime)
-    # Add metadata to logscript.
-    logscript('extractmetadata', 'Extract metadata and frame capture times from
-              metadata file produced by MicroManager with an Andor camera.',
-              cameratype = camtype,
-              cameramodel = cammodel,
-              cameraserialnumber = camserial,
-              exposure = exposure,
-              estimatedframeinterval = interval,
-              preamplifiergain = preampgain,
-              gain = gain,
-              outputamplifier = outputamplifier,
-              binning = binning,
-              roi = roi,
-              temperature = temperature,
-              pixeltype = pixeltype,
-              readoutmode = readoutmode,
-              adconvertor = adconvertor
+    if log == True:
+        logpickle = True
+        # Add metadata to logscript
+        logscript('extractmetadata', ('Extract metadata and frame capture'
+                  'times from metadata file produced by MicroManager with an'
+                  'Andor camera.'),
+                  cameratype = camtype,
+                  cameramodel = cammodel,
+                  cameraserialnumber = camserial,
+                  exposure = exposure,
+                  estimatedframeinterval = interval,
+                  preamplifiergain = preampgain,
+                  gain = gain,
+                  outputamplifier = outputamplifier,
+                  binning = binning,
+                  roi = roi,
+                  temperature = temperature,
+                  pixeltype = pixeltype,
+                  readoutmode = readoutmode,
+                  adconvertor = adconvertor)
+    else:
+        logpickle = False
     # Pickle time series data for each channel.
     if len(channel0) > 0:
-        pickledata(channel0,'channel-0_time-series.pickle')
+        pickledata(channel0,'channel-0_time-series.pickle', log = logpickle)
     if len(channel1) > 0:
-        pickledata(channel1,'channel-1_time-series.pickle')
+        pickledata(channel1,'channel-1_time-series.pickle', log = logpickle)
 
 # def importdata(datafile,metafile,commentfile):
