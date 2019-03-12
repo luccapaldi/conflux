@@ -156,3 +156,49 @@ def extractmetadata(filename, log = True):
         pickledata(channel1,'channel-1_time-series.pickle', log = logpickle)
 
 # def importdata(datafile,metafile,commentfile):
+
+
+def calculate_center_of_mass(imgarray):
+    """
+    Calculate center of mass for each slice of a 3D array.
+    
+    Keyword arguments:
+    imgarray -- multidimensional array of tiff images
+    """
+    #  Sum x(column) and y(row) intensity values
+    m_x = imgarray.sum(axis=1)
+    m_y = imgarray.sum(axis=0)
+    #  cm = sum(m*r)/sum(m), where r is the arbitrary distance from the origin
+    cmx = (np.sum(m_x * (np.arange(m_x.size))) / np.sum(m_x))
+    cmy = (np.sum(m_y * (np.arange(m_y.size))) / np.sum(m_y))
+    return(cmx, cmy)
+
+
+def display_cm_overlay(imgarray, cmx_rounded, cmy_rounded):
+    """
+    Convert grayscale tiff image stack to RGB and overlay center of mass.
+
+    Keyword arguments:
+    array_tiff -- multidimensional array of tiff images
+    cmx_rounded -- list of rounded x coordinates for center of mass of 3D array
+    cmy_rounded -- list of rounded y coordinates for center of mass of 3D array
+    """
+    list_rgb = []
+    coord_count = 0
+    #  Iterate through frames and convert grayscale images to RGB images.
+    for image in range(len(imgarray)):
+        #  Create index values for center of mass
+        x_index = (cmx_rounded[coord_count])
+        y_index = (cmy_rounded[coord_count])
+        coord_count += 1
+        #  Convert each frame to RGB
+        rbg_channel = imgarray[image]
+        image_rgb = np.stack((rbg_channel, rbg_channel, rbg_channel), axis=2)
+        #  Add red pixel at center of mass cordinates
+        #  To change color of cm pixel, change RGB intensity values below
+        image_rgb[x_index, y_index, :] = [255, 0, 0]
+        list_rgb.append(image_rgb)
+    cm_overlay = np.asarray(list_rgb)
+    return cm_overlay
+
+    
