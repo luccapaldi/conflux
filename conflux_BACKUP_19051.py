@@ -128,6 +128,7 @@ def extractmetadata(filename):
         pickledata(channel1, "channel-1_time-series.pickle")
 
 
+<<<<<<< HEAD
 def extractcomments(filename):
     """
     Extract comments recording during acquition using the ImageJ MicroManager
@@ -155,7 +156,7 @@ def extractcomments(filename):
     arrays (imported by tifffile)
     log -- add this action to the log file
     """
-
+=======
 # def importdata(datafile,metafile,commentfile):
 
 
@@ -201,3 +202,6 @@ def display_cm_overlay(imgarray, cmx_rounded, cmy_rounded):
         list_rgb.append(image_rgb)
     cm_overlay = numpy.asarray(list_rgb)
     return cm_overlay
+
+    
+>>>>>>> 654a3f3b0ca4c8f32125e015086ad9f2f236bdd7
