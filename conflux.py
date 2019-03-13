@@ -16,7 +16,6 @@ import datetime
 import pickle
 import json
 
-
 def logscript(name, **kwargs):
     """
     Record a log when analysis script exports important variables.
