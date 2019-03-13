@@ -143,20 +143,26 @@ def extractcomments(filename):
     cleancomments = comments[4:]  # remove non-json compliant header
     jsonfile = json.loads(cleancomments)  # parse metadata string as json
 
-    # def importdata(datafile,metafile,commentfile):
 
-    # TODO def boundarysubtract(imagearray, log = True):
-    """
-    Find mean of boundary pixel intensities in each frame of image stack and 
-    subtract that mean from each pixel. Also find the standard deviation of 
-    the boundary pixel intensities and output them as an array.
-
-    Keyword arguments:
-    imagearray -- array of images which should exist as an array of numpy
-    arrays (imported by tifffile)
-    log -- add this action to the log file
-    """
-
+#def boundarysubtract(imagestack):
+#    """
+#    Find mean of boundary pixel intensities in each frame of image stack and 
+#    subtract that mean from each pixel. Also find the standard deviation of 
+#    the boundary pixel intensities and output them as an array.
+#
+#    Keyword arguments:
+#    imagearray -- array of images which should exist as an array of numpy
+#    arrays (imported by tifffile)
+#    """
+#
+#    for slice in imagestack:
+#        # sum together boundary pixels
+#        boundarysum = numpy.sum(imagestack[slice][:,0] +
+#                                imagestack[slice][:,imagestack.shape[2]-1] +
+#                                imagestack[slice][0,:] +
+#                                imagestack[slice][imagestack.shape[1]-1]
+#        # calculate the population standard deviation of the boundary pixels
+#        boundarystdev = numpy.std(boundarysum)
 
 # def importdata(datafile,metafile,commentfile):
 
