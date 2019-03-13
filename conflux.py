@@ -144,25 +144,47 @@ def extractcomments(filename):
     jsonfile = json.loads(cleancomments)  # parse metadata string as json
 
 
-#def boundarysubtract(imagestack):
-#    """
-#    Find mean of boundary pixel intensities in each frame of image stack and 
-#    subtract that mean from each pixel. Also find the standard deviation of 
-#    the boundary pixel intensities and output them as an array.
-#
-#    Keyword arguments:
-#    imagearray -- array of images which should exist as an array of numpy
-#    arrays (imported by tifffile)
-#    """
-#
-#    for slice in imagestack:
-#        # sum together boundary pixels
-#        boundarysum = numpy.sum(imagestack[slice][:,0] +
-#                                imagestack[slice][:,imagestack.shape[2]-1] +
-#                                imagestack[slice][0,:] +
-#                                imagestack[slice][imagestack.shape[1]-1]
-#        # calculate the population standard deviation of the boundary pixels
-#        boundarystdev = numpy.std(boundarysum)
+def boundarysubtract(imagestack):
+    """
+    Find mean of boundary pixel intensities in each frame of image stack and 
+    subtract that mean from each pixel. Also find the standard deviation of 
+    the boundary pixel intensities and output them as an array.
+
+    Keyword arguments:
+    imagearray -- array of images which should exist as an array of numpy
+    arrays (imported by tifffile)
+    """
+
+    # empty array to store values
+    stdevs = np.zeros(imagestack.shape[0])
+
+    for slice in range(imagestack.shape[0]):
+        # sum together boundary pixels
+        boundaries = [imagestack[slice][:,0],
+                      imagestack[slice][:,imagestack.shape[2]-1],
+                      imagestack[slice][0,:]
+                      imagestack[slice][imagestack.shape[1]-1]]
+        boundarypixels = numpy.concatenate(boundaries)
+        boundarymean = numpy.mean(boundarypixels)
+        # calculate the population standard deviation of the boundary pixels
+        stdevs[slice] = numpy.std(boundarypixels)
+        # remove mean of boundary pixels from slice
+        imagestack[slice] = imagestack[slice] - boundarymean
+
+    # change negative pixel values to zero
+    imagestack = imagestack.clip(min=0)
+    return (imagestack, stdevs)
+
+def check3x3neighbors(slice, pixel):
+    """
+    """
+
+    
+def check5x5neighbors(slice, pixel):
+    """
+    """
+
+    
 
 # def importdata(datafile,metafile,commentfile):
 
