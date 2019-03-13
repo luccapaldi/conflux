@@ -18,3 +18,18 @@ Run black to autoformat your code following PEP8 convention
 
 Otherwise just try to comment your work clearly. In the future I hope implement
 tests but I haven't had the time yet.
+
+## TODO
+
+* Port ImageJ background subtraction script
+* Implement functions to correct for photobleaching
+* Fix comment import
+* Cropping/slicing interface?
+* Auto and cross-correlation functions
+* Display stacks
+* Output images/stacks for presentations
+* Split two color stacks
+* Track conformation of chain
+* Find cell boundary and area
+* Intensity profiles
+* Autoscale images for optimum result
