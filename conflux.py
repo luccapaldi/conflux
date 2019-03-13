@@ -17,6 +17,7 @@ import pickle
 import json
 import numpy
 
+
 def logscript(name, **kwargs):
     """
     Record a log when analysis script exports important variables.
@@ -156,6 +157,7 @@ def extractcomments(filename):
     log -- add this action to the log file
     """
 
+
 # def importdata(datafile,metafile,commentfile):
 
 
@@ -170,9 +172,9 @@ def calculate_center_of_mass(imgarray):
     m_x = imgarray.sum(axis=1)
     m_y = imgarray.sum(axis=0)
     #  cm = sum(m*r)/sum(m), where r is the arbitrary distance from the origin
-    cmx = (numpy.sum(m_x * (numpy.arange(m_x.size))) / numpy.sum(m_x))
-    cmy = (numpy.sum(m_y * (numpy.arange(m_y.size))) / numpy.sum(m_y))
-    return(cmx, cmy)
+    cmx = numpy.sum(m_x * (numpy.arange(m_x.size))) / numpy.sum(m_x)
+    cmy = numpy.sum(m_y * (numpy.arange(m_y.size))) / numpy.sum(m_y)
+    return (cmx, cmy)
 
 
 def display_cm_overlay(imgarray, cmx_rounded, cmy_rounded):
@@ -189,8 +191,8 @@ def display_cm_overlay(imgarray, cmx_rounded, cmy_rounded):
     #  Iterate through frames and convert grayscale images to RGB images.
     for image in range(len(imgarray)):
         #  Create index values for center of mass
-        x_index = (cmx_rounded[coord_count])
-        y_index = (cmy_rounded[coord_count])
+        x_index = cmx_rounded[coord_count]
+        y_index = cmy_rounded[coord_count]
         coord_count += 1
         #  Convert each frame to RGB
         rbg_channel = imgarray[image]
