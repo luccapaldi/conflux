@@ -156,7 +156,7 @@ def boundarysubtract(imagestack):
     """
 
     # empty array to store values
-    stdevs = np.zeros(imagestack.shape[0])
+    stdevs = numpy.zeros(imagestack.shape[0])
 
     for slice in range(imagestack.shape[0]):
         # sum together boundary pixels
@@ -166,8 +166,8 @@ def boundarysubtract(imagestack):
                       imagestack[slice][imagestack.shape[1]-1]]
         boundarypixels = numpy.concatenate(boundaries)
         boundarymean = numpy.mean(boundarypixels)
-        # calculate the population standard deviation of the boundary pixels
-        stdevs[slice] = numpy.std(boundarypixels)
+        # calculate the sample standard deviation of the boundary pixels
+        stdevs[slice] = numpy.std(boundarypixels, ddof=1)
         # remove mean of boundary pixels from slice
         imagestack[slice] = imagestack[slice] - boundarymean
 
@@ -175,16 +175,114 @@ def boundarysubtract(imagestack):
     imagestack = imagestack.clip(min=0)
     return (imagestack, stdevs)
 
-def check3x3neighbors(slice, pixel):
+def check3x3neighbors(slice, pixelcoord):
     """
-    """
+    Find mean of neighboring pixels surrounding single pixel of interest.
 
+    0 0 0 0 0 0 0
+    0 0 0 0 0 0 0
+    0 0 X X X 0 0
+    0 0 X P X 0 0
+    0 0 X X X 0 0
+    0 0 0 0 0 0 0
+    0 0 0 0 0 0 0
+
+    Keyword arguments:
+    slice -- single tiff image (imported as numpy array) which we can reference
+    neighbors within.
+    pixelcoord -- coordinate (as an array [row, column]) of pixel of interest
+    """
+    [y,x] = pixelcoord
+    neighbormean = numpy.mean([slice[y - 1][x - 1],
+                               slice[y - 1][x],
+                               slice[y - 1][x + 1],
+                               slice[y][x - 1],
+                               slice[y][x + 1],
+                               slice[y + 1][x - 1],
+                               slice[y + 1][x],
+                               slice[y + 1][x + 1]])
+    return neighbormean
     
 def check5x5neighbors(slice, pixel):
     """
+    Find mean of pixels surrounding a single pixel of interest but at a distance of one
+    pixel from it.
+
+    0 0 0 0 0 0 0
+    0 X X X X X 0
+    0 X 0 0 0 X 0
+    0 X 0 P 0 X 0
+    0 X 0 0 0 X 0
+    0 X X X X X 0
+    0 0 0 0 0 0 0
+
+    Keyword arguments:
+    slice -- single tiff image (imported as numpy array) which we can reference
+    neighbors within.
+    pixelcoord -- coordinate (as an array [row, column]) of pixel of interest
+    """
+    [y,x] = pixelcoord
+    neighbormean = numpy.mean([slice[y - 2][x - 2],
+                               slice[y - 2][x - 1],
+                               slice[y - 2][x]
+                               slice[y - 2][x + 1],
+                               slice[y - 2][x + 2],
+                               slice[y - 1][x - 2],
+                               slice[y - 1][x + 2],
+                               slice[y][x - 2],
+                               slice[y][x + 2],
+                               slice[y + 1][x - 2],
+                               slice[y + 1][x + 2],
+                               slice[y + 2][x - 2],
+                               slice[y + 2][x - 1],
+                               slice[y + 2][x],
+                               slice[y + 2][x + 1],
+                               slice[y + 2][x + 2]])
+    return neighbormean
+
+def doylebackgroundsubtract(imgstack, sigmamod = 3.00, nearneighbor = True, farneighbor
+                            = True):
+    """
+    Subtract background noise from tiff images or stacks using the method detailed in
+    the supplementary information of the following paper:
+
+    Revisiting the Conformation and Dynamics of DNA in Slitlike Confinement
+    Jing Tang, Stephen L. Levy, Daniel W. Trahan, Jeremy J. Jones, Harold G. Craighead,
+    and Patrick S. Doyle
+    Macromolecules 2010 43 (17), 7368-7377
+    DOI: 10.1021/ma101157x
+
+    Keyword arguments:
+    imgstack -- tiff image or stack as a numpy array
+    sigmamod -- if the mean intensities of the near or far neighbors (depending on
+    booleans below) are less than this value times the standard deviation of the
+    boundary pixels, the pixel is taken to be noise and set to 0
+    nearneighbor -- use the 3x3 near neighbors in evaluation of each pixel
+    farneighbor -- use the 5x5 far neighbors in evaluation of each pixel
     """
 
-    
+    # initial subtraction and get standard deviation of boundaries
+    [stack, stdevs] = boundarysubtract(imgstack)
+    # create an empty array to store resulting modified image
+    newstack = np.zeros(stack[:,2:-2].shape)
+    # this new shape will have the outer two bounding rows of pixels removed
+    newshape = newstack.shape
+
+    for slice in range(newshape[0]):
+        noisecondition = stdevs[slice] * sigmamod
+        for row in range(newshape[1]):
+            for column in range(newshape[2]):
+                pixel = stack[slice][row + 2][column + 2]
+                if nearneighbor == True:
+                    nearmean = check3x3neighbors(stack[slice],pixel)
+                    if nearmean >= noisecondition:
+                        newstack[slice][row][column] = pixel
+                if farneighbor == True:
+                    farcheck = check5x5neighbors(stack[slice],stack[slice][row + 2][column + 2]) 
+                    if farcheck >= noisecondition:
+                        newstack[slice][row][column] = pixel
+                    
+    return(newstack)
 
 # def importdata(datafile,metafile,commentfile):
 
