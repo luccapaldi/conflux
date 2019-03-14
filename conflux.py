@@ -160,10 +160,12 @@ def boundarysubtract(imagestack):
 
     for slice in range(imagestack.shape[0]):
         # sum together boundary pixels
-        boundaries = [imagestack[slice][:,0],
-                      imagestack[slice][:,imagestack.shape[2]-1],
-                      imagestack[slice][0,:]
-                      imagestack[slice][imagestack.shape[1]-1]]
+        boundaries = [
+            imagestack[slice][:, 0],
+            imagestack[slice][:, imagestack.shape[2] - 1],
+            imagestack[slice][0, :],
+            imagestack[slice][imagestack.shape[1] - 1],
+        ]
         boundarypixels = numpy.concatenate(boundaries)
         boundarymean = numpy.mean(boundarypixels)
         # calculate the sample standard deviation of the boundary pixels
@@ -174,6 +176,7 @@ def boundarysubtract(imagestack):
     # change negative pixel values to zero
     imagestack = imagestack.clip(min=0)
     return (imagestack, stdevs)
+
 
 def check3x3neighbors(slice, pixelcoord):
     """
@@ -192,17 +195,22 @@ def check3x3neighbors(slice, pixelcoord):
     neighbors within.
     pixelcoord -- coordinate (as an array [row, column]) of pixel of interest
     """
-    [y,x] = pixelcoord
-    neighbormean = numpy.mean([slice[y - 1][x - 1],
-                               slice[y - 1][x],
-                               slice[y - 1][x + 1],
-                               slice[y][x - 1],
-                               slice[y][x + 1],
-                               slice[y + 1][x - 1],
-                               slice[y + 1][x],
-                               slice[y + 1][x + 1]])
+    [y, x] = pixelcoord
+    neighbormean = numpy.mean(
+        [
+            slice[y - 1][x - 1],
+            slice[y - 1][x],
+            slice[y - 1][x + 1],
+            slice[y][x - 1],
+            slice[y][x + 1],
+            slice[y + 1][x - 1],
+            slice[y + 1][x],
+            slice[y + 1][x + 1],
+        ]
+    )
     return neighbormean
-    
+
+
 def check5x5neighbors(slice, pixel):
     """
     Find mean of pixels surrounding a single pixel of interest but at a distance of one
@@ -221,27 +229,33 @@ def check5x5neighbors(slice, pixel):
     neighbors within.
     pixelcoord -- coordinate (as an array [row, column]) of pixel of interest
     """
-    [y,x] = pixelcoord
-    neighbormean = numpy.mean([slice[y - 2][x - 2],
-                               slice[y - 2][x - 1],
-                               slice[y - 2][x]
-                               slice[y - 2][x + 1],
-                               slice[y - 2][x + 2],
-                               slice[y - 1][x - 2],
-                               slice[y - 1][x + 2],
-                               slice[y][x - 2],
-                               slice[y][x + 2],
-                               slice[y + 1][x - 2],
-                               slice[y + 1][x + 2],
-                               slice[y + 2][x - 2],
-                               slice[y + 2][x - 1],
-                               slice[y + 2][x],
-                               slice[y + 2][x + 1],
-                               slice[y + 2][x + 2]])
+    [y, x] = pixelcoord
+    neighbormean = numpy.mean(
+        [
+            slice[y - 2][x - 2],
+            slice[y - 2][x - 1],
+            slice[y - 2][x],
+            slice[y - 2][x + 1],
+            slice[y - 2][x + 2],
+            slice[y - 1][x - 2],
+            slice[y - 1][x + 2],
+            slice[y][x - 2],
+            slice[y][x + 2],
+            slice[y + 1][x - 2],
+            slice[y + 1][x + 2],
+            slice[y + 2][x - 2],
+            slice[y + 2][x - 1],
+            slice[y + 2][x],
+            slice[y + 2][x + 1],
+            slice[y + 2][x + 2],
+        ]
+    )
     return neighbormean
 
-def doylebackgroundsubtract(imgstack, sigmamod = 3.00, nearneighbor = True, farneighbor
-                            = True):
+
+def doylebackgroundsubtract(
+    imgstack, sigmamod=3.00, nearneighbor=True, farneighbor=True
+):
     """
     Subtract background noise from tiff images or stacks using the method detailed in
     the supplementary information of the following paper:
@@ -264,7 +278,7 @@ def doylebackgroundsubtract(imgstack, sigmamod = 3.00, nearneighbor = True, farn
     # initial subtraction and get standard deviation of boundaries
     [stack, stdevs] = boundarysubtract(imgstack)
     # create an empty array to store resulting modified image
-    newstack = np.zeros(stack[:,2:-2].shape)
+    newstack = np.zeros(stack[:, 2:-2].shape)
     # this new shape will have the outer two bounding rows of pixels removed
     newshape = newstack.shape
 
@@ -274,15 +288,18 @@ def doylebackgroundsubtract(imgstack, sigmamod = 3.00, nearneighbor = True, farn
             for column in range(newshape[2]):
                 pixel = stack[slice][row + 2][column + 2]
                 if nearneighbor == True:
-                    nearmean = check3x3neighbors(stack[slice],pixel)
+                    nearmean = check3x3neighbors(stack[slice], pixel)
                     if nearmean >= noisecondition:
                         newstack[slice][row][column] = pixel
                 if farneighbor == True:
-                    farcheck = check5x5neighbors(stack[slice],stack[slice][row + 2][column + 2]) 
+                    farcheck = check5x5neighbors(
+                        stack[slice], stack[slice][row + 2][column + 2]
+                    )
                     if farcheck >= noisecondition:
                         newstack[slice][row][column] = pixel
-                    
-    return(newstack)
+
+    return newstack
+
 
 # def importdata(datafile,metafile,commentfile):
 
