@@ -16,6 +16,7 @@ import datetime
 import pickle
 import json
 import numpy
+import matplotlib.pyplot as plt
 
 
 def logscript(name, **kwargs):
@@ -156,6 +157,7 @@ def boundarysubtract(imagestack):
     """
 
     # empty array to store values
+    newstack = numpy.zeros(imagestack.shape)
     stdevs = numpy.zeros(imagestack.shape[0])
 
     for slice in range(imagestack.shape[0]):
@@ -171,14 +173,14 @@ def boundarysubtract(imagestack):
         # calculate the sample standard deviation of the boundary pixels
         stdevs[slice] = numpy.std(boundarypixels, ddof=1)
         # remove mean of boundary pixels from slice
-        imagestack[slice] = imagestack[slice] - boundarymean
+        newstack[slice] = imagestack[slice] - boundarymean
 
     # change negative pixel values to zero
-    imagestack = imagestack.clip(min=0)
-    return (imagestack, stdevs)
+    newstack = newstack.clip(min=0)
+    return (newstack, stdevs)
 
 
-def check3x3neighbors(slice, pixelcoord):
+def check3x3neighbors(slice, pixel):
     """
     Find mean of neighboring pixels surrounding single pixel of interest.
 
@@ -195,7 +197,7 @@ def check3x3neighbors(slice, pixelcoord):
     neighbors within.
     pixelcoord -- coordinate (as an array [row, column]) of pixel of interest
     """
-    [y, x] = pixelcoord
+    [y, x] = pixel
     neighbormean = numpy.mean(
         [
             slice[y - 1][x - 1],
@@ -229,7 +231,7 @@ def check5x5neighbors(slice, pixel):
     neighbors within.
     pixelcoord -- coordinate (as an array [row, column]) of pixel of interest
     """
-    [y, x] = pixelcoord
+    [y, x] = pixel
     neighbormean = numpy.mean(
         [
             slice[y - 2][x - 2],
@@ -278,7 +280,7 @@ def doylebackgroundsubtract(
     # initial subtraction and get standard deviation of boundaries
     [stack, stdevs] = boundarysubtract(imgstack)
     # create an empty array to store resulting modified image
-    newstack = np.zeros(stack[:, 2:-2].shape)
+    newstack = numpy.zeros(stack[:, 2:-2, 2:-2].shape)
     # this new shape will have the outer two bounding rows of pixels removed
     newshape = newstack.shape
 
@@ -288,13 +290,11 @@ def doylebackgroundsubtract(
             for column in range(newshape[2]):
                 pixel = stack[slice][row + 2][column + 2]
                 if nearneighbor == True:
-                    nearmean = check3x3neighbors(stack[slice], pixel)
+                    nearmean = check3x3neighbors(stack[slice], [row + 2, column + 2])
                     if nearmean >= noisecondition:
                         newstack[slice][row][column] = pixel
                 if farneighbor == True:
-                    farcheck = check5x5neighbors(
-                        stack[slice], stack[slice][row + 2][column + 2]
-                    )
+                    farcheck = check5x5neighbors(stack[slice], [row + 2, column + 2])
                     if farcheck >= noisecondition:
                         newstack[slice][row][column] = pixel
 
@@ -302,6 +302,34 @@ def doylebackgroundsubtract(
 
 
 # def importdata(datafile,metafile,commentfile):
+
+
+def quickimg(slice):
+    """
+    Display slice using matplotlib.
+
+    Keyword arguments:
+    slice -- numpy array representing single tiff image
+    """
+
+    plt.imshow(slice)
+    plt.show()
+
+
+def quickvid(stack, framerate):
+    """
+    Display looping tiff stack as a video.
+    
+    Keyword arguments:
+    stack -- numpy array representing tiff stack
+    framerate -- how many frames per second
+    """
+
+    frametime = 1.0 / framerate
+    while True:
+        for s in range(stack.shape[0]):
+            plt.imshow(stack[s])
+            plt.pause(frametime)
 
 
 def calculate_center_of_mass(imgarray):
