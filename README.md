@@ -13,15 +13,14 @@ for your own work.
 Try to follow PEP8 guidelines as much as possible. I also require the following
 to merge changes:
 
-Run pipreqs to generate an updated requirements.txt
-Run black to autoformat your code following PEP8 convention
+* Run pipreqs to generate an updated requirements.txt
+* Run black to autoformat your code following PEP8 convention
 
 Otherwise just try to comment your work clearly. In the future I hope implement
 tests but I haven't had the time yet.
 
 ## TODO
 
-* Port ImageJ background subtraction script
 * Implement functions to correct for photobleaching
 * Fix comment import
 * Cropping/slicing interface?
