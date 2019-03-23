@@ -1,6 +1,6 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
-# conflux
+# tondu
 
 This is a package containing self-contained, modular functions for analysis of
 DNA polymer physics. These functions are all a result of work in the Reisner
