@@ -2,6 +2,8 @@
 
 # tondu
 
+A companion package to the tif file format for scientific analysis.
+
 This is a package containing self-contained, modular functions for analysis of
 DNA polymer physics. These functions are all a result of work in the Reisner
 group at McGill University and are not intended to fully encompass all systems.
@@ -10,7 +12,8 @@ for your own work.
 
 ## Contributor guidelines
 
-Try to follow PEP8 guidelines as much as possible. I also require the following
+Try to follow PEP8 guidelines as much as possible (except that black line length
+defaults are used; 88 chars). I also require the following
 to merge changes:
 
 * Run pipreqs to generate an updated requirements.txt
