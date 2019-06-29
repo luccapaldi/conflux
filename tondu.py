@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import tifffile
 import pickle
 import json
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -161,8 +161,8 @@ def boundarysubtract(imagestack):
     """
 
     # empty array to store values
-    newstack = numpy.zeros(imagestack.shape)
-    stdevs = numpy.zeros(imagestack.shape[0])
+    newstack = np.zeros(imagestack.shape)
+    stdevs = np.zeros(imagestack.shape[0])
 
     for slice in range(imagestack.shape[0]):
         # sum together boundary pixels
@@ -172,10 +172,10 @@ def boundarysubtract(imagestack):
             imagestack[slice][0, :],
             imagestack[slice][imagestack.shape[1] - 1],
         ]
-        boundarypixels = numpy.concatenate(boundaries)
-        boundarymean = numpy.mean(boundarypixels)
+        boundarypixels = np.concatenate(boundaries)
+        boundarymean = np.mean(boundarypixels)
         # calculate the sample standard deviation of the boundary pixels
-        stdevs[slice] = numpy.std(boundarypixels, ddof=1)
+        stdevs[slice] = np.std(boundarypixels, ddof=1)
         # remove mean of boundary pixels from slice
         newstack[slice] = imagestack[slice] - boundarymean
 
@@ -202,7 +202,7 @@ def check3x3neighbors(slice, pixel):
     pixelcoord -- coordinate (as an array [row, column]) of pixel of interest
     """
     [y, x] = pixel
-    neighbormean = numpy.mean(
+    neighbormean = np.mean(
         [
             slice[y - 1][x - 1],
             slice[y - 1][x],
@@ -236,7 +236,7 @@ def check5x5neighbors(slice, pixel):
     pixelcoord -- coordinate (as an array [row, column]) of pixel of interest
     """
     [y, x] = pixel
-    neighbormean = numpy.mean(
+    neighbormean = np.mean(
         [
             slice[y - 2][x - 2],
             slice[y - 2][x - 1],
@@ -284,7 +284,7 @@ def doylebackgroundsubtract(
     # initial subtraction and get standard deviation of boundaries
     [stack, stdevs] = boundarysubtract(imgstack)
     # create an empty array to store resulting modified image
-    newstack = numpy.zeros(stack[:, 2:-2, 2:-2].shape)
+    newstack = np.zeros(stack[:, 2:-2, 2:-2].shape)
     # this new shape will have the outer two bounding rows of pixels removed
     newshape = newstack.shape
 
@@ -347,8 +347,8 @@ def calculate_center_of_mass(imgarray):
     m_x = imgarray.sum(axis=1)
     m_y = imgarray.sum(axis=0)
     #  cm = sum(m*r)/sum(m), where r is the arbitrary distance from the origin
-    cmx = numpy.sum(m_x * (numpy.arange(m_x.size))) / numpy.sum(m_x)
-    cmy = numpy.sum(m_y * (numpy.arange(m_y.size))) / numpy.sum(m_y)
+    cmx = np.sum(m_x * (np.arange(m_x.size))) / np.sum(m_x)
+    cmy = np.sum(m_y * (np.arange(m_y.size))) / np.sum(m_y)
     return (cmx, cmy)
 
 
@@ -371,10 +371,59 @@ def display_cm_overlay(imgarray, cmx_rounded, cmy_rounded):
         coord_count += 1
         #  Convert each frame to RGB
         rbg_channel = imgarray[image]
-        image_rgb = numpy.stack((rbg_channel, rbg_channel, rbg_channel), axis=2)
+        image_rgb = np.stack((rbg_channel, rbg_channel, rbg_channel), axis=2)
         #  Add red pixel at center of mass cordinates
         #  To change color of cm pixel, change RGB intensity values below
         image_rgb[x_index, y_index, :] = [255, 0, 0]
         list_rgb.append(image_rgb)
-    cm_overlay = numpy.asarray(list_rgb)
+    cm_overlay = np.asarray(list_rgb)
     return cm_overlay
+
+def projectstack(imgstack, axis, function):
+    """
+    Take projection of image stack in x, y or z or direction.
+
+    Keyword arguments:
+    imgstack -- array of images which should exist as an array of numpy arrays (imported
+    by tifffile)
+    axis [x, y, z] -- project vertically, horizontally or down the stack (z-project) 
+    function [mean, max, min, sum, std, med]-- whether to project the mean, max, min, sum, standard deviation or median
+    """
+    
+    # perform error check to ensure user input is appropriate
+    # numpy's axis system is a bit strange
+    # x, y and z change depending on the dimension of the array
+    # for example, x is axis 0 for a 1D array, axis 1 for a 2D array and axis 2 for a 3D
+    # array
+    # the method below should work around this while performing a check on the user axis
+    # input
+    if  axis == 'x':
+        npaxis = imgstack.ndim - 1
+    elif axis == 'y':
+        npaxis = imgstack.ndim - 2
+    elif axis == 'z':
+        npaxis = imgstack.ndim - 3
+    else:
+        print("Invalid axis input. Enter x, y or z as a string.")
+        return
+    if npaxis < 0:
+        print("You can not perform that projection on an array of that dimension.")
+        return
+
+    if function == 'mean':
+        projection = np.mean(imgstack, axis=npaxis)
+    elif function == 'max':
+        projection = np.amax(imgstack, axis=npaxis)
+    elif function == 'min':
+        projection = np.amin(imgstack, axis=npaxis)
+    elif function == 'sum':
+        projection = np.sum(imgstack, axis=npaxis)
+    elif function == 'std':
+        projection = np.std(imgstack, axis=npaxis)
+    elif function == 'med':
+        projection = np.median(imgstack, axis=npaxis)
+    else:
+        print("Invalid projection operation. Enter mean, max, min, sum, std or med as a string")
+        return
+
+    return projection
