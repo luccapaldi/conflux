@@ -428,7 +428,7 @@ def projectstack(imgstack, axis, function):
 
     return projection
 
-def locate2max(array, separation, range):
+def locate2max(array, separation, checkreg):
     """
     Find the two max values in an array separated by a certain number of values (with
     uncertainty.
@@ -436,31 +436,53 @@ def locate2max(array, separation, range):
     Keyword arguments:
     array -- 1D numpy array of values
     separation -- the number of values expected between the two max values
-    range -- number of values in each direction to check for a max around the separation
+    checkreg -- number of values in each direction to check for a max around the separation
     """
+    
     # find the first half the array
     half = round(len(array)/2)
     # find the maximum in the first half the array
     firstmax = max(array[0:half])
     # find the location of the first max
-    firstmaxloc = np.where(array[0:half]==firstmax)
+    firstmaxloc = np.where(array[0:half]==firstmax)[0][0]
     # find the expected location for the second peak
     expected = firstmaxloc + separation
     # define the ranges about the expected value
-    rangemin = expected - range
-    rangemax = expected + range
+    rangemin = expected - checkreg
+    rangemax = expected + checkreg
     # check that the max range is not bigger than the array
     if rangemax > len(array):
         rangemax = len(array)
     # now find the second max
-    secondmax = max(array[rangemin:rangemax)
-    secondmaxloc = np.where(array[rangemin:rangemax]==secondmax)
+    secondmax = max(array[rangemin:rangemax])
+    secondmaxloc = rangemin + np.where(array[rangemin:rangemax]==secondmax)[0][0]
     # now find the actual separation between the two maxes
     realsep = secondmaxloc-firstmaxloc
     return [[firstmaxloc,secondmaxloc],[firstmax,secondmax],realsep]
 
+def quicklevel(array,cursor1,cursor2):
+    """
+    Level data by finding a line between two points, generating a corresponding dataset,
+    and subtracting that dataset from the original.
 
-
-
+    Keyword arguments:
+    array -- 1D numpy array of values
+    cursor 1 and cursor 2 -- the two points between which to draw a line and generate
+    data to subtract
+    """
     
+    # get array values at cursors
+    val1 = array[cursor1]
+    val2 = array[cursor2]
+    # generate line
+    slope=(val2-val1)/(cursor2-cursor1)
+    intercept=val1-(slope*cursor1)
+    # generate dataset with which to subtract
+    genvals = [0]*len(array)
+    for i in range(len(genvals)):
+        x = cursor1 + i
+        genvals[i]=slope*(x)+intercept
+    # subtract values
+    leveleddata = array - genvals
+    return [leveleddata,genvals]
 
