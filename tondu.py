@@ -387,7 +387,7 @@ def projectstack(imgstack, axis, function):
     imgstack -- array of images which should exist as an array of numpy arrays (imported
     by tifffile)
     axis [x, y, z] -- project vertically, horizontally or down the stack (z-project) 
-    function [mean, max, min, sum, std, med]-- whether to project the mean, max, min, sum, standard deviation or median
+    function [mean, max, min, sum, std, med] -- whether to project the mean, max, min, sum, standard deviation or median
     """
     
     # perform error check to ensure user input is appropriate
@@ -427,3 +427,40 @@ def projectstack(imgstack, axis, function):
         return
 
     return projection
+
+def locate2max(array, separation, range):
+    """
+    Find the two max values in an array separated by a certain number of values (with
+    uncertainty.
+
+    Keyword arguments:
+    array -- 1D numpy array of values
+    separation -- the number of values expected between the two max values
+    range -- number of values in each direction to check for a max around the separation
+    """
+    # find the first half the array
+    half = round(len(array)/2)
+    # find the maximum in the first half the array
+    firstmax = max(array[0:half])
+    # find the location of the first max
+    firstmaxloc = np.where(array[0:half]==firstmax)
+    # find the expected location for the second peak
+    expected = firstmaxloc + separation
+    # define the ranges about the expected value
+    rangemin = expected - range
+    rangemax = expected + range
+    # check that the max range is not bigger than the array
+    if rangemax > len(array):
+        rangemax = len(array)
+    # now find the second max
+    secondmax = max(array[rangemin:rangemax)
+    secondmaxloc = np.where(array[rangemin:rangemax]==secondmax)
+    # now find the actual separation between the two maxes
+    realsep = secondmaxloc-firstmaxloc
+    return [[firstmaxloc,secondmaxloc],[firstmax,secondmax],realsep]
+
+
+
+
+    
+
