@@ -4,6 +4,8 @@
 
 A companion package to the tif file format for scientific analysis.
 
+![Tif et Tondu](tif-et-tondu.jpg?raw=true "Tif et Tondu")
+
 This is a package containing self-contained, modular functions for analysis of
 DNA polymer physics. These functions are all a result of work in the Reisner
 group at McGill University and are not intended to fully encompass all systems.
