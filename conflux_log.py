@@ -1,3 +1,5 @@
+# DEPRICATED
+
 #                    __ _          
 #    ___ ___  _ __  / _| |_   ___  __
 # __/ __/ _ \| '_ \| |_| | | | \ \/ /
@@ -10,14 +12,6 @@
 # -- raw-data
 # -- metadata
 # -- comment
-# - run-name-post-initial-processing
-# - run-name
-# -- raw-data
-# -- metadata
-# -- comment
-# ++ raw-data-channel-split-and-pickled
-# ++ log.yaml-file-containing-all-processing-performed-along-with-comments
-# ++ subfolder-if-you-want-to-branch-your-processing
 
 import tifffile 
 import datetime
@@ -41,8 +35,7 @@ def logscript(scriptname, logdescription, **kwargs):
     log.write('    date : "'
               + str(timestamp.year) + '-'
               + str(timestamp.month) + '-'
-              + str(timestamp.day) + '"\n')
-    log.write('    time : "'
+
               + str(timestamp.hour) + ':'
               + str(timestamp.minute) + ':'
               + str(timestamp.second) + '"\n')
@@ -59,6 +52,7 @@ def pickledata(dataobject, filename, log = True):
     Keyword arguments:
     dataobject -- python object to be serialized
     filename -- name of pickle file to save serialized data
+    log -- add this action to the log file
     """
     with open(filename, 'wb') as fileobject:
         pickle.dump(dataobject, fileobject, pickle.HIGHEST_PROTOCOL)
@@ -94,39 +88,39 @@ def extractmetadata(filename, log = True):
 
     Keyword arguments:
     filename -- name of textfile containing metadata
+    log -- add this action to the log file
     """
-    # Need to add comments import.
     metafile = open(filename,'r')
     metadata = metafile.read() # read metadata as string
-    json = json.loads(metadata) # parse metadata string as json
-    framekeys = list(json.keys())[1:] # create list of FrameKeys in metadata
+    jsonf = json.loads(metadata) # parse metadata string as json
+    framekeys = list(jsonf.keys())[1:] # create list of FrameKeys in metadata
     # Record acquisition metadata from the first frame recorded.
-    readoutmode = json[framekeys[0]]['Andor-ReadoutMode']['PropVal']
-    interval = json[framekeys[0]]['Andor-ActualInterval-ms']['PropVal']
-    roi = json[framekeys[0]]['ROI']
-    pixeltype = json[framekeys[0]]['Andor-PixelType']['PropVal']
-    outputamplifier = json[framekeys[0]]['Andor-Output_Amplifier']['PropVal']
-    exposure = json[framekeys[0]]['Exposure-ms']
-    preampgain = json[framekeys[0]]['Andor-Pre-Amp-Gain']['PropVal']
-    adconvertor = json[framekeys[0]]['Andor-AD_Converter']['PropVal']
-    camspecs = json[framekeys[0]]['Andor-Camera']['PropVal'].split()
-    gain = json[framekeys[0]]['Andor-Gain']['PropVal']
-    binning = json[framekeys[0]]['Binning']
-    exposure = json[framekeys[0]]['Andor-Exposure']['PropVal']
-    temperature = json[framekeys[0]]['Andor-CCDTemperature']['PropVal']
+    readoutmode = jsonf[framekeys[0]]['Andor-ReadoutMode']['PropVal']
+    interval = jsonf[framekeys[0]]['Andor-ActualInterval-ms']['PropVal']
+    roi = jsonf[framekeys[0]]['ROI']
+    pixeltype = jsonf[framekeys[0]]['Andor-PixelType']['PropVal']
+    outputamplifier = jsonf[framekeys[0]]['Andor-Output_Amplifier']['PropVal']
+    exposure = jsonf[framekeys[0]]['Exposure-ms']
+    preampgain = jsonf[framekeys[0]]['Andor-Pre-Amp-Gain']['PropVal']
+    adconvertor = jsonf[framekeys[0]]['Andor-AD_Converter']['PropVal']
+    camspecs = jsonf[framekeys[0]]['Andor-Camera']['PropVal'].split()
+    gain = jsonf[framekeys[0]]['Andor-Gain']['PropVal']
+    binning = jsonf[framekeys[0]]['Binning']
+    exposure = jsonf[framekeys[0]]['Andor-Exposure']['PropVal']
+    temperature = jsonf[framekeys[0]]['Andor-CCDTemperature']['PropVal']
     # Split camera specifications into  individual variables.
     camtype = camspecs[1]
     cammodel = camspecs[3]
     camserial = camspecs[5]
     # Initialize lists to store the two channel time values.
     channel0, channel1  = [], []
-    starttime = json[framekeys[0]]['ElapsedTime-ms']
+    starttime = jsonf[framekeys[0]]['ElapsedTime-ms']
     # Add normalized times to each channel list.
     for frame in framekeys:
-        if json[frame]['ChannelIndex'] == 0:
-            channel0.append(json[frame]['ElapsedTime-ms'] - starttime)
+        if jsonf[frame]['ChannelIndex'] == 0:
+            channel0.append(jsonf[frame]['ElapsedTime-ms'] - starttime)
         else:
-            channel1.append(json[frame]['ElapsedTime-ms'] - starttime)
+            channel1.append(jsonf[frame]['ElapsedTime-ms'] - starttime)
     if log == True:
         logpickle = True
         # Add metadata to logscript
@@ -155,4 +149,33 @@ def extractmetadata(filename, log = True):
     if len(channel1) > 0:
         pickledata(channel1,'channel-1_time-series.pickle', log = logpickle)
 
-# def importdata(datafile,metafile,commentfile):
+def extractcomments(filename, log = True):
+    """
+    Extract comments recording during acquition using the ImageJ MicroManager
+    with an Andor camera.
+
+    Keyword arguments:
+    filename -- name of textfile containing metadata
+    log -- add this action to the log file
+    """
+
+    commentfile = open(filename,'r')
+    comments = commentfile.read() # read comments as string
+    cleancomments = comments[4:] # remove non-json compliant header
+    jsonfile = json.loads(cleancomments) # parse metadata string as json
+
+ #def importdata(datafile,metafile,commentfile):
+
+def boundarysubtract(imagearray, log = True):
+    """
+    Find mean of boundary pixel intensities in each frame of image stack and 
+    subtract that mean from each pixel. Also find the standard deviation of 
+    the boundary pixel intensities and output them as an array.
+
+    Keyword arguments:
+    imagearray -- array of images which should exist as an array of numpy
+    arrays (imported by tifffile)
+    log -- add this action to the log file
+    """
+
+

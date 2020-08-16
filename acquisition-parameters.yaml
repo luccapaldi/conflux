@@ -1,0 +1,28 @@
+cameratype : iXon
+cameramodel : DU897_BV
+cameraserialnumber : 5264
+exposure : 100.00
+estimatedframeinterval : 135.60
+preamplifiergain : 2.4x
+gain : 300
+outputamplifier : Electron Multiplying
+binning : 1
+roi : 0-0-512-512
+temperature : -69
+pixeltype : 16bit
+readoutmode : 10.000 MHz
+adconvertor : 1. 14bit
+cameratype : iXon
+cameramodel : DU897_BV
+cameraserialnumber : 5264
+exposure : 100.00
+estimatedframeinterval : 135.60
+preamplifiergain : 2.4x
+gain : 300
+outputamplifier : Electron Multiplying
+binning : 1
+roi : 0-0-512-512
+temperature : -69
+pixeltype : 16bit
+readoutmode : 10.000 MHz
+adconvertor : 1. 14bit
